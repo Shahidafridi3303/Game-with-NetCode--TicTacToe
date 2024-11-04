@@ -41,6 +41,7 @@ public class BoardManager : NetworkBehaviour
             buttons[r, c].interactable = false;
             // Also change on Client side
             ChangeSpriteClientRpc(r, c);
+            CheckResult(r, c);
             GameManager.Instance.currentTurn.Value = 1;
         }
 
@@ -50,6 +51,7 @@ public class BoardManager : NetworkBehaviour
         {
             buttons[r, c].GetComponent<Image>().sprite = oSprite;
             buttons[r, c].interactable = false;
+            CheckResult(r, c);
             // Also change on host side
             ChangeSpriteServerRpc(r, c);
         }
@@ -68,5 +70,76 @@ public class BoardManager : NetworkBehaviour
         buttons[r, c].GetComponent<Image>().sprite = oSprite;
         buttons[r, c].interactable = false;
         GameManager.Instance.currentTurn.Value = 0;
+    }
+
+    private void CheckResult(int r, int c)
+    {
+        if (IsWon(r, c))
+        {
+            GameManager.Instance.ShowMsg("won");
+        }
+        else
+        {
+            if (IsGameDraw())
+            {
+                GameManager.Instance.ShowMsg("draw");
+            }
+        }
+    }
+
+    public bool IsWon(int r, int c)
+    {
+        Sprite clickedButtonSprite = buttons[r, c].GetComponent<Image>().sprite;
+        // Checking Column
+        if (buttons[0, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+            buttons[1, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+            buttons[2, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
+        {
+            return true;
+        }
+
+        // Checking Row
+
+        else if (buttons[r, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[r, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[r, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
+        {
+            return true;
+        }
+
+        // Checking First Diagonal
+
+        else if (buttons[0, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[1, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[2, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
+        {
+            return true;
+        }
+
+        // Checking 2nd Diagonal
+        else if (buttons[0, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[1, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
+                 buttons[2, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsGameDraw()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (buttons[i, j].GetComponent<Image>().sprite != xSprite &&
+                    buttons[i, j].GetComponent<Image>().sprite != oSprite)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
