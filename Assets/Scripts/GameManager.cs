@@ -45,9 +45,10 @@ public class GameManager : NetworkBehaviour
     }
 
     [SerializeField] private GameObject boardPrefab;
+    private GameObject newBoard;
     private void SpwanBoard()
     {
-        GameObject newBoard = Instantiate(boardPrefab);
+        newBoard = Instantiate(boardPrefab);
         newBoard.GetComponent<NetworkObject>().Spawn();
     }
 
@@ -100,5 +101,42 @@ public class GameManager : NetworkBehaviour
     {
         msgText.text = msg;
         gameEndPanel.SetActive(true);
+    }
+
+    public void Restart()
+    {
+        // If this is client, then call SererRpc to destroy current board and create new board
+        // If this is client then Client will also call ServerRpc to hide result panel on host side
+
+        if (!IsHost)
+        {
+            RestartServerRpc();
+            gameEndPanel.SetActive(false);
+        }
+        else
+        {
+            Destroy(newBoard);
+            SpwanBoard();
+            RestartClientRpc();
+        }
+
+        // Destroy the current Game Board
+        // Spawn a new board
+        // Hide the Result Panel
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RestartServerRpc()
+    {
+        Destroy(newBoard);
+        SpwanBoard();
+        gameEndPanel.SetActive(false);
+    }
+
+
+    [ClientRpc]
+    private void RestartClientRpc()
+    {
+        gameEndPanel.SetActive(false);
     }
 }
