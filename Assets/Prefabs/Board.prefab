@@ -825,7 +825,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3704383293
+  GlobalObjectIdHash: 3206473150
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -846,8 +846,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e189015294424a4d8465b50a6784ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  xSprite: {fileID: 21300000, guid: 6cc9da18af3f70047884f8261fe73182, type: 3}
-  oSprite: {fileID: 21300000, guid: c58b763521316bc48aa53571315532e2, type: 3}
+  playerXSprite: {fileID: 21300000, guid: 6cc9da18af3f70047884f8261fe73182, type: 3}
+  playerOSprite: {fileID: 21300000, guid: c58b763521316bc48aa53571315532e2, type: 3}
 --- !u!1 &6886156221105750925
 GameObject:
   m_ObjectHideFlags: 0

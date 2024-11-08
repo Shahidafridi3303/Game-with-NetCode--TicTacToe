@@ -4,10 +4,14 @@ using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : NetworkBehaviour
+public class MultiplayerTicTacToeManager : NetworkBehaviour
 {
-    public NetworkVariable<int> currentTurn = new NetworkVariable<int>(0);
-    public static GameManager Instance;
+    public NetworkVariable<int> activePlayerTurn = new NetworkVariable<int>(0);
+    public static MultiplayerTicTacToeManager Instance;
+    [SerializeField] private GameObject boardPrefab;
+    private GameObject currentBoardInstance;
+    [SerializeField] private GameObject resultPanel;
+    [SerializeField] private TextMeshProUGUI resultText;
 
     private void Awake()
     {
@@ -21,12 +25,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    public void StartHost()
+    public void StartHostGame()
     {
         NetworkManager.Singleton.StartHost();
     }
 
-    public void StartClient()
+    public void StartClientGame()
     {
         NetworkManager.Singleton.StartClient();
     }
@@ -39,71 +43,66 @@ public class GameManager : NetworkBehaviour
             if (NetworkManager.Singleton.IsHost &&
                 NetworkManager.Singleton.ConnectedClients.Count == 2)
             {
-                SpwanBoard();
+                InitializeGameBoard();
             }
         };
     }
 
-    [SerializeField] private GameObject boardPrefab;
-    private GameObject newBoard;
-    private void SpwanBoard()
+    private void InitializeGameBoard()
     {
-        newBoard = Instantiate(boardPrefab);
-        newBoard.GetComponent<NetworkObject>().Spawn();
+        currentBoardInstance = Instantiate(boardPrefab);
+        currentBoardInstance.GetComponent<NetworkObject>().Spawn();
     }
 
-    [SerializeField] private GameObject gameEndPanel;
-    [SerializeField] private TextMeshProUGUI msgText;
-
-    public void ShowMsg(string msg)
+    public void DisplayResult(string msg)
     {
         if (msg.Equals("won"))
         {
-            msgText.text = "You Won";
-            gameEndPanel.SetActive(true);
+            resultText.text = "You Won";
+            resultPanel.SetActive(true);
             // Show Panel with text that Opponent Won
-            ShowOpponentMsg("You Lose");
+            NotifyOpponent("You Lose");
         }
         else if (msg.Equals("draw"))
         {
-            msgText.text = "Game Draw";
-            gameEndPanel.SetActive(true);
-            ShowOpponentMsg("Game Draw");
+            resultText.text = "Game Draw";
+            resultPanel.SetActive(true);
+            NotifyOpponent("Game Draw");
         }
     }
 
 
-    private void ShowOpponentMsg(string msg)
+    private void NotifyOpponent(string msg)
     {
         if (IsHost)
         {
             // Then use ClientRpc to show Message at Client Side
-            OpponentMsgClientRpc(msg);
+            NotifyClientResultClientRpc(msg);
         }
         else
         {
             // Use ServerRpc to show message at Server Side
-            OpponentMsgServerRpc(msg);
+            NotifyServerResultServerRpc(msg);
         }
     }
 
     [ClientRpc]
-    private void OpponentMsgClientRpc(string msg)
+    private void NotifyClientResultClientRpc(string msg)
     {
         if (IsHost) return;
-        msgText.text = msg;
-        gameEndPanel.SetActive(true);
+        resultText.text = msg;
+        resultPanel.SetActive(true);
     }
 
 
     [ServerRpc(RequireOwnership = false)]
-    private void OpponentMsgServerRpc(string msg)
+    private void NotifyServerResultServerRpc(string msg)
     {
-        msgText.text = msg;
-        gameEndPanel.SetActive(true);
+        resultText.text = msg;
+        resultPanel.SetActive(true);
     }
 
-    public void Restart()
+    public void RestartGame()
     {
         // If this is client, then call SererRpc to destroy current board and create new board
         // If this is client then Client will also call ServerRpc to hide result panel on host side
@@ -111,12 +110,12 @@ public class GameManager : NetworkBehaviour
         if (!IsHost)
         {
             RestartServerRpc();
-            gameEndPanel.SetActive(false);
+            resultPanel.SetActive(false);
         }
         else
         {
-            Destroy(newBoard);
-            SpwanBoard();
+            Destroy(currentBoardInstance);
+            InitializeGameBoard();
             RestartClientRpc();
         }
 
@@ -128,15 +127,15 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RestartServerRpc()
     {
-        Destroy(newBoard);
-        SpwanBoard();
-        gameEndPanel.SetActive(false);
+        Destroy(currentBoardInstance);
+        InitializeGameBoard();
+        resultPanel.SetActive(false);
     }
 
 
     [ClientRpc]
     private void RestartClientRpc()
     {
-        gameEndPanel.SetActive(false);
+        resultPanel.SetActive(false);
     }
 }

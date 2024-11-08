@@ -152,11 +152,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 090db3badedf4a448882e3ba3295e882, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentTurn:
+  activePlayerTurn:
     m_InternalValue: 0
   boardPrefab: {fileID: 6860007443759397967, guid: c339f227363c6154ca3c7abd1a935055, type: 3}
-  gameEndPanel: {fileID: 2096883523}
-  msgText: {fileID: 1828836845}
+  resultPanel: {fileID: 2096883523}
+  resultText: {fileID: 1828836845}
 --- !u!4 &201714437
 Transform:
   m_ObjectHideFlags: 0
@@ -583,7 +583,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 201714436}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: StartClient
+        m_MethodName: StartClientGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -808,7 +808,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 201714436}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: StartHost
+        m_MethodName: StartHostGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1519,7 +1519,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 201714436}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: Restart
+        m_MethodName: RestartGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
