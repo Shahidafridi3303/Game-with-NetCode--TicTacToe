@@ -15,13 +15,13 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance == null)
         {
-            Destroy(gameObject);
+            Instance = this;
         }
         else
         {
-            Instance = this;
+            Destroy(gameObject);
         }
     }
 
@@ -37,15 +37,19 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     private async void Start()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += (clientId) =>
+        // Setup client connection events for board generation
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientJoined;
+    }
+
+    private void OnClientJoined(ulong clientId)
+    {
+        Debug.Log("Player " + clientId + " connected");
+
+        // Start game if two players are connected
+        if (NetworkManager.Singleton.IsHost && NetworkManager.Singleton.ConnectedClients.Count == 2)
         {
-            Debug.Log("Client with id " + clientId + " joined");
-            if (NetworkManager.Singleton.IsHost &&
-                NetworkManager.Singleton.ConnectedClients.Count == 2)
-            {
-                InitializeGameBoard();
-            }
-        };
+            InitializeGameBoard();
+        }
     }
 
     private void InitializeGameBoard()
@@ -54,20 +58,19 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
         currentBoardInstance.GetComponent<NetworkObject>().Spawn();
     }
 
-    public void DisplayResult(string msg)
+    public void DisplayResult(string result)
     {
-        if (msg.Equals("won"))
+        if (result == "victory")
         {
-            resultText.text = "You Won";
+            resultText.text = "Congratulations! You Win!";
             resultPanel.SetActive(true);
-            // Show Panel with text that Opponent Won
             NotifyOpponent("You Lose");
         }
-        else if (msg.Equals("draw"))
+        else if (result == "tie")
         {
-            resultText.text = "Game Draw";
+            resultText.text = "It's a Draw!";
             resultPanel.SetActive(true);
-            NotifyOpponent("Game Draw");
+            NotifyOpponent("It's a Draw!");
         }
     }
 

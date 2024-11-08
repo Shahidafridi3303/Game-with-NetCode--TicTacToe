@@ -73,55 +73,32 @@ public class MultiplayerBoardManager : NetworkBehaviour
     {
         if (CheckVictoryCondition(r, c))
         {
-            MultiplayerTicTacToeManager.Instance.DisplayResult("won");
+            MultiplayerTicTacToeManager.Instance.DisplayResult("victory");
         }
         else
         {
             if (CheckDrawCondition())
             {
-                MultiplayerTicTacToeManager.Instance.DisplayResult("draw");
+                MultiplayerTicTacToeManager.Instance.DisplayResult("tie");
             }
         }
     }
 
-    public bool CheckVictoryCondition(int r, int c)
+    private bool CheckVictoryCondition(int row, int col)
     {
-        Sprite clickedButtonSprite = cellButtons[r, c].GetComponent<Image>().sprite;
-        // Checking Column
-        if (cellButtons[0, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-            cellButtons[1, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-            cellButtons[2, c].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
-        {
-            return true;
-        }
-
-        // Checking Row
-
-        else if (cellButtons[r, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[r, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[r, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
-        {
-            return true;
-        }
-
-        // Checking First Diagonal
-
-        else if (cellButtons[0, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[1, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[2, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
-        {
-            return true;
-        }
-
-        // Checking 2nd Diagonal
-        else if (cellButtons[0, 2].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[1, 1].GetComponentInChildren<Image>().sprite == clickedButtonSprite &&
-                 cellButtons[2, 0].GetComponentInChildren<Image>().sprite == clickedButtonSprite)
-        {
-            return true;
-        }
-
-        return false;
+        Sprite sprite = cellButtons[row, col].GetComponent<Image>().sprite;
+        return (cellButtons[0, col].GetComponent<Image>().sprite == sprite &&
+                cellButtons[1, col].GetComponent<Image>().sprite == sprite &&
+                cellButtons[2, col].GetComponent<Image>().sprite == sprite) ||
+               (cellButtons[row, 0].GetComponent<Image>().sprite == sprite &&
+                cellButtons[row, 1].GetComponent<Image>().sprite == sprite &&
+                cellButtons[row, 2].GetComponent<Image>().sprite == sprite) ||
+               (cellButtons[0, 0].GetComponent<Image>().sprite == sprite &&
+                cellButtons[1, 1].GetComponent<Image>().sprite == sprite &&
+                cellButtons[2, 2].GetComponent<Image>().sprite == sprite) ||
+               (cellButtons[0, 2].GetComponent<Image>().sprite == sprite &&
+                cellButtons[1, 1].GetComponent<Image>().sprite == sprite &&
+                cellButtons[2, 0].GetComponent<Image>().sprite == sprite);
     }
 
     private bool CheckDrawCondition()
