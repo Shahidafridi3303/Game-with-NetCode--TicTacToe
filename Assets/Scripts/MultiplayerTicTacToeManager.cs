@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,6 +14,12 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
     private GameObject currentBoardInstance;
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TextMeshProUGUI resultText;
+
+    [SerializeField] private TMP_InputField passwordInputField;
+    [SerializeField] private GameObject passwordEntryUI;
+    [SerializeField] private GameObject leaveButton;
+
+    private string serverPassword = "defaultPassword";
 
     private void Awake()
     {
@@ -27,12 +35,31 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     public void StartHostGame()
     {
+        // Set server password before starting the host
+        serverPassword = passwordInputField.text;
+
+        // Hook up password approval check
+        NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
         NetworkManager.Singleton.StartHost();
     }
 
     public void StartClientGame()
     {
+        // Set password ready to send to the server to validate
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = Encoding.ASCII.GetBytes(passwordInputField.text);
         NetworkManager.Singleton.StartClient();
+    }
+
+    private void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
+    {
+        // Decode the password sent by the client
+        string password = Encoding.ASCII.GetString(request.Payload);
+
+        // Check if the password matches the server's password
+        bool approveConnection = password == serverPassword;
+
+        // Set response values based on password check
+        response.Approved = approveConnection;
     }
 
     private async void Start()
@@ -107,9 +134,6 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     public void RestartGame()
     {
-        // If this is client, then call SererRpc to destroy current board and create new board
-        // If this is client then Client will also call ServerRpc to hide result panel on host side
-
         if (!IsHost)
         {
             RestartServerRpc();
@@ -121,10 +145,6 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
             InitializeGameBoard();
             RestartClientRpc();
         }
-
-        // Destroy the current Game Board
-        // Spawn a new board
-        // Hide the Result Panel
     }
 
     [ServerRpc(RequireOwnership = false)]

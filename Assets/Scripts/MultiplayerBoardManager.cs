@@ -7,10 +7,11 @@ using UnityEngine.UI;
 public class MultiplayerBoardManager : NetworkBehaviour
 {
     [SerializeField] private Sprite playerXSprite, playerOSprite;
-    Button[,] cellButtons = new Button[3, 3];
+    Button[,] cellButtons = new Button[3, 3];          // 2D array cellButtons holds references to each button on the board.
     public override void OnNetworkSpawn()
     {
-        InitializeBoardCells();
+        //when the network initializes this object
+        InitializeBoardCells(); 
     }
 
     private void InitializeBoardCells()
