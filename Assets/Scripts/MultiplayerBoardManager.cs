@@ -41,12 +41,16 @@ public class MultiplayerBoardManager : NetworkBehaviour
             SyncClientMarkClientRpc(r, c);
             CheckGameStatus(r, c);
             MultiplayerTicTacToeManager.Instance.activePlayerTurn.Value = 1;
+
+            MultiplayerTicTacToeManager.Instance.TurnText.SetActive(false);
         }
 
         // If button is clicked by client, then change button sprite as O
 
         else if (!NetworkManager.Singleton.IsHost && MultiplayerTicTacToeManager.Instance.activePlayerTurn.Value == 1)
         {
+            MultiplayerTicTacToeManager.Instance.TurnText.SetActive(true);
+
             cellButtons[r, c].GetComponent<Image>().sprite = playerOSprite;
             cellButtons[r, c].interactable = false;
             CheckGameStatus(r, c);
@@ -58,6 +62,8 @@ public class MultiplayerBoardManager : NetworkBehaviour
     [ClientRpc]
     private void SyncClientMarkClientRpc(int r, int c)
     {
+        MultiplayerTicTacToeManager.Instance.TurnText.SetActive(true);
+
         cellButtons[r, c].GetComponent<Image>().sprite = playerXSprite;
         cellButtons[r, c].interactable = false;
     }
@@ -65,6 +71,8 @@ public class MultiplayerBoardManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void SyncServerMarkServerRpc(int r, int c)
     {
+        MultiplayerTicTacToeManager.Instance.TurnText.SetActive(false);
+
         cellButtons[r, c].GetComponent<Image>().sprite = playerOSprite;
         cellButtons[r, c].interactable = false;
         MultiplayerTicTacToeManager.Instance.activePlayerTurn.Value = 0;

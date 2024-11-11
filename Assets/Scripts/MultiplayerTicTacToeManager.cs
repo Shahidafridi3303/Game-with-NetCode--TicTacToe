@@ -20,7 +20,7 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     [SerializeField] private GameObject leaveButton;
     [SerializeField] private TextMeshProUGUI Message;
-
+    public GameObject TurnText;
     private string serverPassword = "defaultPassword";
 
     private void Awake()
@@ -96,8 +96,6 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
         // Are we the client that is connecting?
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
-            Message.gameObject.SetActive(false);
-
             passwordEntryUI.SetActive(false);
             leaveButton.SetActive(true);
         }
@@ -105,9 +103,6 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
 
     private void HandleClientDisconnect(ulong clientId)
     {
-        Message.gameObject.SetActive(true);
-        Message.text = "You left, Rejoin using Code or create new";
-
         // Are we the client that is disconnecting?
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
@@ -120,16 +115,53 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsHost)
         {
-            NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
+            DeactivateBoardOnAllClientsClientRpc();
+        }
+        else
+        {
+            DeactivateBoardOnHostServerRpc();
         }
 
         // Shutdown the network manager to stop the host or client.
         NetworkManager.Singleton.Shutdown();
+    }
+
+    [ClientRpc]
+    private void DeactivateBoardOnAllClientsClientRpc()
+    {
+        if (currentBoardInstance != null)
+        {
+            Destroy(currentBoardInstance);
+        }
 
         // Re-enable UI elements for entering the game
         passwordEntryUI.SetActive(true);
         leaveButton.SetActive(false);
+
+        Message.gameObject.SetActive(true);
+        Message.text = "Game Room - Create or Join Game";
     }
+
+    // ServerRpc method must end with 'ServerRpc'
+    [ServerRpc(RequireOwnership = false)]
+    private void DeactivateBoardOnHostServerRpc()
+    {
+        if (currentBoardInstance != null)
+        {
+            Destroy(currentBoardInstance);
+        }
+
+        // Re-enable UI elements for entering the game
+        passwordEntryUI.SetActive(true);
+        leaveButton.SetActive(false);
+
+        Message.gameObject.SetActive(true);
+        Message.text = "Game Room - Create or Join Game";
+
+        // Notify all clients to deactivate the board
+        DeactivateBoardOnAllClientsClientRpc();
+    }
+
 
     private void OnClientJoined(ulong clientId)
     {
@@ -145,13 +177,25 @@ public class MultiplayerTicTacToeManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void HideMessageOnClientRpc()
+    {
+        Message.gameObject.SetActive(false);
+    }
+
     private void InitializeGameBoard()
     {
         Message.gameObject.SetActive(false);
+        leaveButton.SetActive(true);
 
         // Instantiate and spawn the board
         currentBoardInstance = Instantiate(boardPrefab);
         currentBoardInstance.GetComponent<NetworkObject>().Spawn();
+
+        if (IsHost)
+        {
+            HideMessageOnClientRpc();
+        }
     }
 
     public void DisplayResult(string result)
